@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import{UserService} from './user.service';
 import  {User}from './user';
 import {clone} from 'lodash';
+import { environment } from '../../environments/environment';
+import { LoaderComponentService } from '../loader/loader.service';
+
 @Component({
   selector: 'app-user',
   templateUrl: './user.component.html',
@@ -17,40 +20,48 @@ export class UserComponent implements OnInit {
   newInventoryItem:any={};
   editUserForm:boolean=false;
   editedUser:any={};
-  constructor(private userService:UserService) { }
+  error: any;
+  isShowAlert:boolean=false;
+  alertMessage: any;
+  constructor(private userService:UserService,private loaderService: LoaderComponentService) { }
 
   ngOnInit() {
     this.getInventory();
     this.getBrandList();
   }
 
-  getInventory = function(){
-   this.userService.getInventoryList('http://localhost:8080/api/v1/brandDetails').subscribe(
+  getInventory(){
+    this.showLoader();
+  this.userService.getInventoryList(environment.baseURL+'brandDetails').subscribe(
     (data: any) => {
       console.log(data)
       this.inventoryItems = data
+      this.hideLoader();
+
     }, // success path
     error => {
       this.error = error // error path
+      this.hideLoader();
+
     }
   );
   }
-  getBrandList = function(){
-    this.userService.getBrandList('http://localhost:8080/api/v1/getAll').subscribe(
+  getBrandList(){
+    this.showLoader();
+    this.userService.getBrandList(environment.baseURL+'getAll').subscribe(
      (data: any) => {
        console.log(data)
        this.brands = data
+       this.hideLoader();
      }, // success path
      error => {
+      this.hideLoader();
+
        this.error = error // error path
      }
    );
    }
-  getUsers=function(){
-    this.users=this.userService.getUsersFromData();
-  }
-
-  showEditUserForm(user:User){
+showEditUserForm(user:User){
     if(!user){
       this.userForm=false;
       return;
@@ -61,8 +72,6 @@ export class UserComponent implements OnInit {
 
   }
   showAddUserForm(){
-
-    // resets form if edited user
     if(this.inventoryItems.length){
       this.newInventoryItem={};
     }
@@ -70,12 +79,55 @@ export class UserComponent implements OnInit {
     this.isNewUser=true;
 
   }
-  saveInventoryItem=function(item:any){
-    console.log(item)
+  hideItemForm(){
+    this.newInventoryItem={};
+    this.userForm=false;
+    this.isNewUser=false;
+  }
+  showEditItemForm(item){
+      this.newInventoryItem=item;
+    
+    this.userForm=true;
+    this.isNewUser=false;
+
+  }
+  saveInventoryItem(item:any){
+    this.showLoader();
     if(item && !item.id){
       //add a new user
-      this.userService.addInventory('http://localhost:8080/api/v1/brandDetails',item).subscribe(
-        
+      this.userService.addInventory(environment.baseURL+'brandDetails',item).subscribe(
+        (data: any) => {
+          console.log(data)
+          this.inventoryItems.push(data);
+          this.newInventoryItem={};
+          this.hideLoader();
+          this.showAlert("Item Added Successfully");
+
+
+        }, // success path
+        error => {
+          this.error = error // error path
+          this.hideLoader();
+
+        }
+      );
+    }
+    else{
+      this.userService.editInventory(environment.baseURL+'brandDetails/'+item.id,item).subscribe(
+        (data: any) => {
+          console.log(data)
+          this.inventoryItems.push(data);
+          this.newInventoryItem={};
+          this.hideLoader();
+          this.showAlert("Item Updated Successfully");
+
+
+        }, // success path
+        error => {
+          this.error = error // error path
+          this.hideLoader();
+
+        }
       );
     }
    
@@ -94,16 +146,39 @@ export class UserComponent implements OnInit {
     this.editedUser={};
   }
 
-  removeUser(user:User){
-    this.userService.deleteUser(user);
-  }
-  cancelEdits(){
-    this.editedUser={};
-    this.editUserForm=false;
+  removeItem(item:any){
+    this.showLoader();
+    this.userService.deleteUser(environment.baseURL+'brandDetails/'+item.id).subscribe(
+      (data: any) => {
+        console.log(data)
+        this.inventoryItems.splice(this.inventoryItems.indexOf(item),1);
+    console.log(this.inventoryItems);
+    this.hideLoader();
+    this.showAlert("Item Removed Successfully");
+
+      }, // success path
+      error => {
+        this.error = error // error path
+        this.hideLoader();
+
+      }
+    );
   }
 
-  cancelNewUser(){
-    this.newInventoryItem={};
-    this.userForm=false;
+  public showLoader(): void {
+    this.loaderService.show();
+  }
+  public hideLoader(): void {
+    this.loaderService.hide();
+  }
+  public showAlert(message){
+    this.alertMessage=message;
+    this.isShowAlert=true;      
+    setTimeout(function(){
+      this.isShowAlert=false; 
+      this.alertMessage="";
+     
+    
+    },4000);
   }
 }
