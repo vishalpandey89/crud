@@ -23,6 +23,7 @@ export class UserComponent implements OnInit {
   error: any;
   isShowAlert:boolean=false;
   alertMessage: any;
+  alreadySorted: boolean = false;
   constructor(private userService:UserService,private loaderService: LoaderComponentService) { }
 
   ngOnInit() {
@@ -46,6 +47,25 @@ export class UserComponent implements OnInit {
     }
   );
   }
+  sortInventry(){
+    if(!this.alreadySorted){
+      this.showLoader();
+      this.userService.getInventoryList(environment.baseURL+'brandDetails?orderBy=DESC').subscribe(
+        (data: any) => {
+          console.log(data)
+          this.inventoryItems = data
+          this.hideLoader();
+          this.alreadySorted=true;
+    
+        }, // success path
+        error => {
+          this.error = error // error path
+          this.hideLoader();
+    
+        }
+      );
+    }
+   }
   getBrandList(){
     this.showLoader();
     this.userService.getBrandList(environment.baseURL+'getAll').subscribe(
@@ -173,13 +193,16 @@ showEditUserForm(user:User){
     this.loaderService.hide();
   }
   public showAlert(message){
+    debugger
     this.alertMessage=message;
-    this.isShowAlert=true;      
-    setTimeout(function(){
+    this.isShowAlert=true; 
+    console.log(this.alertMessage+"dsjhkjh kjdhfk jhk sdfhkjh")
+
+    setTimeout(() => {
+      debugger
       this.isShowAlert=false; 
       this.alertMessage="";
-     
-    
-    },4000);
-  }
+      console.log(this.alertMessage)
+    }, 4000);
+}
 }
