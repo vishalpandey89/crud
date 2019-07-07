@@ -85,6 +85,7 @@ showEditUserForm(user:User){
     this.isNewUser=false;
   }
   showEditItemForm(item){
+      window.scrollBy(0, -1000000);
       this.newInventoryItem=item;
     
     this.userForm=true;
