@@ -11,13 +11,17 @@ import { AboutComponent } from './about/about.component';
 import { NavComponent } from './nav/nav.component';
 
 import{UserService} from './user/user.service';
+import { LoaderComponent } from './loader/loader.component';
+import { LoaderComponentService } from './loader/loader.service';
 
 @NgModule({
   declarations: [
     AppComponent,
     UserComponent,
     AboutComponent,
-    NavComponent
+    NavComponent,
+    LoaderComponent,
+
   ],
   imports: [
     BrowserModule,
@@ -25,7 +29,7 @@ import{UserService} from './user/user.service';
     HttpClientModule,
     AppRoutingModule
   ],
-  providers: [UserService],
+  providers: [UserService,LoaderComponentService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

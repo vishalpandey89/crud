@@ -22,6 +22,9 @@ export class UserService {
   addInventory(url,data):any{
     return this.http.post(url,data);
   }
+  editInventory(url,data):any{
+    return this.http.put(url,data);
+  }
 
   getUsersFromData():User[]{
     console.log(this.upersons);
@@ -40,9 +43,8 @@ export class UserService {
     })
     this.upersons[index]=user;
   }
-  deleteUser(user:User){
-    this.upersons.splice(this.upersons.indexOf(user),1);
-    console.log(this.upersons);
+  deleteUser(url){
+   return this.http.delete(url);
   }
 
 }
